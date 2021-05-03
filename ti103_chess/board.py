@@ -20,7 +20,7 @@ import sys
 # d'un cavalier vers la case b3.
 piece_initiale = {
     'Roi': 'K',
-    'Dame': 'D',
+    'Dame': 'Q',
     'Fou': 'B',
     'Cavalier': 'N',
     'Tour': 'R',
@@ -68,7 +68,7 @@ class Piece:
         """
         Retourne la case correspondante de la piece affichee a l'ecran.
         """
-        return chr(97 + (self.x // 85)) + str(((680 - self.y) // 85) + 1)
+        return chr(97 + (self.x // 85)) + str(((680 - self.y) // 85))
 
 
 class Echiquier:
@@ -112,6 +112,7 @@ class Echiquier:
                        Piece("Pion",     "Blanc", 85 * 6, 85 * 6, 85, self._image(image, (902, 214, 85, 85)), ecran),
                        Piece("Pion",     "Blanc", 85 * 7, 85 * 6, 85, self._image(image, (902, 214, 85, 85)), ecran)]
 
+
     def jouer(self):
         """
         C'est ici que se trouve la boucle de jeu, dans laquelle se rafraichit l'image de l'echiquier.
@@ -121,15 +122,72 @@ class Echiquier:
                 if event.type == pygame.QUIT:
                     sys.exit(0)
 
+# partie 4 determiner si et quelle piece sera choisie pour deplacer.
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         x, y = event.pos
-                        print(x, y)
+                        casedepart = chr(97 + (x // 85)) + str(((680 - y) // 85) + 1)
+                        print(' manuel case de depart: ' + casedepart)
 
+                        for i in self.pieces:   # donne acces aux attributs de chaque piece
+
+                            if ((x // 85) * 85) == i.x and ((y // 85) * 85) == i.y:
+                                print(i.nom + " " + i.couleur + " est a: " + i.case())
+                                pieceprise = i
+                                break
+
+# Partie 5 deplacer la piece choisie
                 elif event.type == pygame.MOUSEBUTTONUP:
                     if event.button == 1:
                         x, y = event.pos
-                        print(x, y)
+                        casearrivee = chr(97 + (x // 85)) + str(((680 - y) // 85) + 1)
+                        mvmnt = str(casedepart + casearrivee)
+
+  #partie 6 validite du mouvement.
+
+                        print("recherche de mouvements legaux")
+                        for k in self.moteur.legal_moves:
+                            answer = str(k)
+                            if(answer==mvmnt):
+                                # Deplace la piece jouee
+                                print(f"{piece_initiale[i.nom]}{i.case()}{casearrivee}")
+                                self.moteur.push_san(f"{piece_initiale[i.nom]}{i.case()}{casearrivee}")
+                                for n, p in enumerate(self.pieces):
+                                    if ((x // 85) * 85) == p.x and ((y // 85) * 85) == p.y:
+                                        print(f"{p.couleur} {p.nom} being captured")
+                                        self.pieces.pop(n)
+                                        break
+                                i.x = ((x // 85) * 85)
+                                i.y = 680 - (((680 - y) // 85 + 1) * 85)
+                                print("i,x = ", str(i.x) + "i,y = ", str(i.y))
+                            # envoie a la piece x et y du coin superieur gauche de la case ou aterrit la piece
+
+
+
+
+
+#Partie 7 Determiner la prise d'une piece
+
+                        # for m, p in enumerate(pieces):
+                        #     print(type(m))
+                        #     if (x // 85 == p.x // 85) and (y // 85 == p.y // 85):
+                        #         print(f"{p.color} {p.name} being captured")
+                        #         pieces.pop(m)
+                        #         break
+
+
+                        # for j in self.pieces:  # donne acces aux attributs de chaque piece
+                        #      # detection de collision ou bien si j ai depose au dessus d une piece
+                        #
+                            # if ((x // 85) * 85) == j.x and ((y // 85) * 85) == j.y:
+                            #     print("je ne passe jamais ici")
+                            #     print(j.nom + " " + j.couleur + " " + j.case()+ " x: " + str(j.x) + " y: " + str(j.y))
+                            #     piecedepose = j.case()
+                            #     print(j.case())
+                            #     print(str(i.x) + ":" + str(i.y) + "-" + str(j.x) + ":" + str(j.y))
+                            #     print(i.case(), j.case())
+                            #     break
+
 
             self.ecran.fill((255, 255, 255))
             self.ecran.blit(self.echiquier, self.echiquier.get_rect())
@@ -146,6 +204,8 @@ class Echiquier:
         obj.blit(image, (0, 0), r)
         return obj
 
+    def to_tile(x, y):
+        return chr(97 + (x // 85)) + str(((680 - y) // 85) + 1)
 
 def nouvelle_partie():
     """
